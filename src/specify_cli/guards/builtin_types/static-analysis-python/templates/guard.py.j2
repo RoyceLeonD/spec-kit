@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+DEFAULT_PARAMS = {{ default_params_repr }}
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+def main() -> int:
+    raw = sys.argv[1] if len(sys.argv) > 1 else "{}"
+    overrides = json.loads(raw)
+    params = dict(DEFAULT_PARAMS)
+    params.update(overrides)
+    paths = [str(PROJECT_ROOT / item) for item in (params.get("paths") or []) if (PROJECT_ROOT / item).exists()]
+    command = [sys.executable, "-m", "compileall", *paths] if paths else [sys.executable, "-m", "compileall", str(PROJECT_ROOT)]
+    result = subprocess.run(command, cwd=PROJECT_ROOT, capture_output=True, text=True)
+    passed = result.returncode == 0
+    print(json.dumps({
+        "passed": passed,
+        "analysis": "Python static analysis passed" if passed else "Python static analysis failed",
+        "details": {"command": command},
+    }))
+    if result.stdout:
+        print(result.stdout, file=sys.stderr, end="")
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end="")
+    return 0 if passed else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

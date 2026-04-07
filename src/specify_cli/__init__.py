@@ -1483,6 +1483,10 @@ preset_app = typer.Typer(
 )
 app.add_typer(preset_app, name="preset")
 
+# Guard CLI
+from .guards import guard_app
+app.add_typer(guard_app, name="guard")
+
 preset_catalog_app = typer.Typer(
     name="catalog",
     help="Manage preset catalogs",

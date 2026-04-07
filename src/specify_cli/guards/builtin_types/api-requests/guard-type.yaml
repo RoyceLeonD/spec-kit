@@ -1,0 +1,5 @@
+category: api
+type: requests
+description: Validate HTTP API endpoints from a lightweight request manifest.
+default_params:
+  manifest_path: .specify/api-requests.yaml

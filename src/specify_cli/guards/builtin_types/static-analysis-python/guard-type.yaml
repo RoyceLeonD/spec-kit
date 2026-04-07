@@ -1,0 +1,7 @@
+category: static-analysis
+type: python
+description: Compile Python files to catch syntax errors quickly.
+default_params:
+  paths:
+    - src
+    - tests

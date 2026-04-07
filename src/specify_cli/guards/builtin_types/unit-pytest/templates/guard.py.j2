@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+DEFAULT_PARAMS = {{ default_params_repr }}
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+
+def main() -> int:
+    raw = sys.argv[1] if len(sys.argv) > 1 else "{}"
+    overrides = json.loads(raw)
+    params = dict(DEFAULT_PARAMS)
+    params.update(overrides)
+    test_paths = params.get("test_paths") or ["tests"]
+
+    resolved = []
+    missing = []
+    for item in test_paths:
+        path = PROJECT_ROOT / item
+        if path.exists():
+            resolved.append(str(path))
+        else:
+            missing.append(item)
+
+    if missing:
+        payload = {
+            "passed": False,
+            "analysis": f"Missing pytest target(s): {', '.join(missing)}",
+            "details": {"missing": missing},
+        }
+        print(json.dumps(payload))
+        return 1
+
+    command = [sys.executable, "-m", "pytest", *resolved, "-q"]
+    result = subprocess.run(command, cwd=PROJECT_ROOT, capture_output=True, text=True)
+    passed = result.returncode == 0
+    payload = {
+        "passed": passed,
+        "analysis": "Pytest guard passed" if passed else "Pytest guard failed",
+        "details": {
+            "command": command,
+            "targets": test_paths,
+        },
+    }
+    print(json.dumps(payload))
+    if result.stdout:
+        print(result.stdout, file=sys.stderr, end="")
+    if result.stderr:
+        print(result.stderr, file=sys.stderr, end="")
+    return 0 if passed else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

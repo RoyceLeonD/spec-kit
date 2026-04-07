@@ -1,0 +1,6 @@
+category: ui
+type: playwright
+description: Validate that a Playwright spec exists for a UI workflow.
+default_params:
+  spec_paths:
+    - tests/ui

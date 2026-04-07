@@ -1,0 +1,6 @@
+category: unit
+type: pytest
+description: Run pytest against one or more test paths.
+default_params:
+  test_paths:
+    - tests/unit
